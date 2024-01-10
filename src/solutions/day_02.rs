@@ -99,76 +99,76 @@ impl Key {
 
 #[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 struct SimpleKeypadKey {
-    key: Key
+    key: Key,
 }
 
 impl SimpleKeypadKey {
     fn new() -> Self {
         Self { key: Key::K5 }
     }
-    
+
     fn next(&self, direction: &Direction) -> Self {
         let key = match self.key {
             Key::K1 => match direction {
                 Direction::R => Key::K2,
                 Direction::D => Key::K4,
                 _ => self.key,
-            }
+            },
             Key::K2 => match direction {
                 Direction::R => Key::K3,
                 Direction::D => Key::K5,
                 Direction::L => Key::K1,
                 _ => self.key,
-            }
+            },
             Key::K3 => match direction {
                 Direction::D => Key::K6,
                 Direction::L => Key::K2,
                 _ => self.key,
-            }
+            },
             Key::K4 => match direction {
                 Direction::U => Key::K1,
                 Direction::R => Key::K5,
                 Direction::D => Key::K7,
                 _ => self.key,
-            }
+            },
             Key::K5 => match direction {
                 Direction::U => Key::K2,
                 Direction::R => Key::K6,
                 Direction::D => Key::K8,
                 Direction::L => Key::K4,
-            }
+            },
             Key::K6 => match direction {
                 Direction::U => Key::K3,
                 Direction::D => Key::K9,
                 Direction::L => Key::K5,
                 _ => self.key,
-            }
+            },
             Key::K7 => match direction {
                 Direction::U => Key::K4,
                 Direction::R => Key::K8,
                 _ => self.key,
-            }
+            },
             Key::K8 => match direction {
                 Direction::U => Key::K5,
                 Direction::R => Key::K9,
                 Direction::L => Key::K7,
                 _ => self.key,
-            }
+            },
             Key::K9 => match direction {
                 Direction::U => Key::K6,
                 Direction::L => Key::K8,
                 _ => self.key,
-            }
+            },
             _ => unreachable!(),
         };
-        
+
         Self { key }
     }
 }
 
 #[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 struct TrickyKeypadKey {
-    key: Key
+    key: Key,
 }
 
 impl TrickyKeypadKey {
@@ -181,45 +181,45 @@ impl TrickyKeypadKey {
             Key::K1 => match direction {
                 Direction::D => Key::K3,
                 _ => self.key,
-            }
+            },
             Key::K2 => match direction {
                 Direction::R => Key::K3,
                 Direction::D => Key::K6,
                 _ => self.key,
-            }
+            },
             Key::K3 => match direction {
                 Direction::U => Key::K1,
                 Direction::R => Key::K4,
                 Direction::D => Key::K7,
                 Direction::L => Key::K2,
-            }
+            },
             Key::K4 => match direction {
                 Direction::L => Key::K3,
                 Direction::D => Key::K8,
                 _ => self.key,
-            }
+            },
             Key::K5 => match direction {
                 Direction::R => Key::K6,
                 _ => self.key,
-            }
+            },
             Key::K6 => match direction {
                 Direction::U => Key::K2,
                 Direction::R => Key::K7,
                 Direction::D => Key::KA,
                 Direction::L => Key::K5,
-            }
+            },
             Key::K7 => match direction {
                 Direction::U => Key::K3,
                 Direction::R => Key::K8,
                 Direction::D => Key::KB,
                 Direction::L => Key::K6,
-            }
+            },
             Key::K8 => match direction {
                 Direction::U => Key::K4,
                 Direction::R => Key::K9,
                 Direction::D => Key::KC,
                 Direction::L => Key::K7,
-            }
+            },
             Key::K9 => match direction {
                 Direction::L => Key::K8,
                 _ => self.key,
@@ -228,22 +228,22 @@ impl TrickyKeypadKey {
                 Direction::U => Key::K6,
                 Direction::R => Key::KB,
                 _ => self.key,
-            }
-            Key::KB =>  match direction {
+            },
+            Key::KB => match direction {
                 Direction::U => Key::K7,
                 Direction::R => Key::KC,
                 Direction::D => Key::KD,
                 Direction::L => Key::KA,
-            }
+            },
             Key::KC => match direction {
                 Direction::U => Key::K8,
                 Direction::L => Key::KB,
                 _ => self.key,
-            }
+            },
             Key::KD => match direction {
                 Direction::U => Key::KB,
                 _ => self.key,
-            }
+            },
         };
 
         Self { key }
