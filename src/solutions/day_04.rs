@@ -14,6 +14,16 @@ pub fn solve_1(rooms: &[&str]) -> u32 {
         .sum()
 }
 
+pub fn solve_2(rooms: &[&str]) -> u32 {
+    rooms
+        .iter()
+        .map(|s| Room::new(s))
+        .filter(|r| r.real())
+        .find(|r| r.decrypt() == "northpole object storage")
+        .map(|r| r.sector)
+        .unwrap()
+}
+
 lazy_static! {
     static ref RE: Regex =
         Regex::new(r"^(?<name>[a-z\-]+)-(?<sector>\d+)\[(?<check>[a-z]{5})]$").unwrap();
@@ -64,6 +74,27 @@ impl<'a> Room<'a> {
 
         counts == self.checksum
     }
+
+    fn decrypt(&self) -> String {
+        fn shift(c: char, sector: u32) -> char {
+            let mut c = c as u8;
+            c -= b'a';
+            let mut c = c as u32;
+            c = (c + sector) % (b'z' - b'a' + 1) as u32;
+            let mut c = c as u8;
+            c += b'a';
+
+            c as char
+        }
+
+        self.name
+            .chars()
+            .map(|c| match c {
+                '-' => ' ',
+                _ => shift(c, self.sector),
+            })
+            .collect()
+    }
 }
 
 #[cfg(test)]
@@ -91,5 +122,19 @@ mod tests {
             .collect_vec();
 
         assert_eq!(245_102, solve_1(&input));
+    }
+
+    #[test]
+    fn day_04_part_02_sample() {
+        // No sample inputs for part 2
+    }
+
+    #[test]
+    fn day_04_part_02_solution() {
+        let input = include_str!("../../inputs/day_04.txt")
+            .lines()
+            .collect_vec();
+
+        assert_eq!(324, solve_2(&input));
     }
 }
