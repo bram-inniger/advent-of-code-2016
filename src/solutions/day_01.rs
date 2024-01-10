@@ -1,5 +1,8 @@
 use std::str::FromStr;
 
+use itertools::Itertools;
+use rustc_hash::FxHashSet;
+
 pub fn solve_1(instructions: &str) -> i32 {
     let mut direction = Direction::N;
     let mut coordinate = Coordinate { x: 0, y: 0 };
@@ -13,6 +16,31 @@ pub fn solve_1(instructions: &str) -> i32 {
         });
 
     coordinate.distance()
+}
+
+pub fn solve_2(instructions: &str) -> i32 {
+    let instructions = instructions.split(", ").map(Instruction::new).collect_vec();
+
+    let mut direction = Direction::N;
+    let mut coordinate = Coordinate { x: 0, y: 0 };
+    let mut visited: FxHashSet<Coordinate> = FxHashSet::default();
+    visited.insert(coordinate);
+
+    for i in &instructions {
+        direction = direction.turn(&i.turn);
+
+        for _ in 0..i.distance {
+            coordinate = coordinate.go(&direction, 1);
+
+            if visited.contains(&coordinate) {
+                return coordinate.distance();
+            } else {
+                visited.insert(coordinate);
+            }
+        }
+    }
+
+    unreachable!()
 }
 
 #[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
@@ -121,5 +149,17 @@ mod tests {
         let input = include_str!("../../inputs/day_01.txt").trim();
 
         assert_eq!(250, solve_1(input));
+    }
+
+    #[test]
+    fn day_01_part_02_sample() {
+        assert_eq!(4, solve_2("R8, R4, R4, R8"));
+    }
+
+    #[test]
+    fn day_01_part_02_solution() {
+        let input = include_str!("../../inputs/day_01.txt").trim();
+
+        assert_eq!(151, solve_2(input));
     }
 }
