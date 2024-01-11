@@ -16,6 +16,22 @@ pub fn solve_1(messages: &[&str]) -> String {
         .collect()
 }
 
+pub fn solve_2(messages: &[&str]) -> String {
+    let bytes = messages.iter().map(|s| s.as_bytes()).collect_vec();
+
+    (0..messages[0].len())
+        .map(|x| {
+            (0..messages.len())
+                .map(|y| bytes[y][x])
+                .counts()
+                .iter()
+                .min_by_key(|(_, &count)| count)
+                .map(|(c, _)| *c as char)
+                .unwrap()
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use itertools::Itertools;
@@ -39,5 +55,24 @@ mod tests {
             .collect_vec();
 
         assert_eq!("gyvwpxaz", solve_1(&input));
+    }
+
+    #[test]
+    fn day_06_part_02_sample() {
+        let sample = vec![
+            "eedadn", "drvtee", "eandsr", "raavrd", "atevrs", "tsrnev", "sdttsa", "rasrtv",
+            "nssdts", "ntnada", "svetve", "tesnvt", "vntsnd", "vrdear", "dvrsen", "enarar",
+        ];
+
+        assert_eq!("advent", solve_2(&sample));
+    }
+
+    #[test]
+    fn day_06_part_02_solution() {
+        let input = include_str!("../../inputs/day_06.txt")
+            .lines()
+            .collect_vec();
+
+        assert_eq!("jucfoary", solve_2(&input));
     }
 }
