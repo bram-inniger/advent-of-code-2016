@@ -3,12 +3,31 @@ use std::str::FromStr;
 use itertools::Itertools;
 
 pub fn solve_1(instructions: &[&str], width: usize, height: usize) -> usize {
+    display(instructions, width, height).voltage()
+}
+
+pub fn solve_2(instructions: &[&str], width: usize, height: usize) -> String {
+    display(instructions, width, height)
+        .pixels
+        .iter()
+        .map(|row| {
+            row.iter()
+                .map(|&p| match p {
+                    true => '#',
+                    false => '.',
+                })
+                .collect::<String>()
+        })
+        .join("\n")
+}
+
+fn display(instructions: &[&str], width: usize, height: usize) -> Screen {
     let instructions = instructions
         .iter()
         .map(|s| Instruction::new(s))
         .collect_vec();
 
-    Screen::new(width, height).display(&instructions).voltage()
+    Screen::new(width, height).display(&instructions)
 }
 
 #[derive(Debug)]
@@ -147,5 +166,27 @@ mod tests {
             .collect_vec();
 
         assert_eq!(110, solve_1(&input, 50, 6));
+    }
+
+    #[test]
+    fn day_08_part_02_sample() {
+        // No sample inputs for part 2
+    }
+
+    #[test]
+    fn day_08_part_02_solution() {
+        let input = include_str!("../../inputs/day_08.txt")
+            .lines()
+            .collect_vec();
+        let expected = "\
+            ####...##.#..#.###..#..#..##..###..#....#...#..##.\n\
+            ...#....#.#..#.#..#.#.#..#..#.#..#.#....#...#...#.\n\
+            ..#.....#.####.#..#.##...#....#..#.#.....#.#....#.\n\
+            .#......#.#..#.###..#.#..#....###..#......#.....#.\n\
+            #....#..#.#..#.#.#..#.#..#..#.#....#......#..#..#.\n\
+            ####..##..#..#.#..#.#..#..##..#....####...#...##..\
+            ";
+
+        assert_eq!(expected, solve_2(&input, 50, 6));
     }
 }
