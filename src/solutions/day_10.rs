@@ -9,12 +9,14 @@ use std::collections::VecDeque;
 pub fn solve_1(instructions: &[&str], seek_chips: [u32; 2]) -> u32 {
     let (bots, chips) = parse_instructions(instructions);
 
-    Factory {
-        bots,
-        chips,
-        seek_chips,
-    }
-    .seek()
+    Factory::new(bots, chips, seek_chips).run().0
+}
+
+pub fn solve_2(instructions: &[&str], seek_chips: [u32; 2]) -> u32 {
+    let (bots, chips) = parse_instructions(instructions);
+
+    let out = Factory::new(bots, chips, seek_chips).run().1;
+    out[&0] * out[&1] * out[&2]
 }
 
 lazy_static! {
@@ -38,7 +40,7 @@ fn parse_instructions(instructions: &[&str]) -> (FxHashMap<u32, Bot>, VecDeque<C
     (bots, chips)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Factory {
     bots: FxHashMap<u32, Bot>,
     chips: VecDeque<Chip>,
@@ -46,40 +48,54 @@ struct Factory {
 }
 
 impl Factory {
-    fn seek(&mut self) -> u32 {
-        while let Some(chip) = self.chips.pop_front() {
+    fn new(bots: FxHashMap<u32, Bot>, chips: VecDeque<Chip>, seek_chips: [u32; 2]) -> Self {
+        Self {
+            bots,
+            chips,
+            seek_chips,
+        }
+    }
+
+    fn run(&self) -> (u32, FxHashMap<u32, u32>) {
+        let mut fact = self.clone();
+        let mut chips_found = 0;
+        let mut outputs: FxHashMap<u32, u32> = FxHashMap::default();
+
+        while let Some(chip) = fact.chips.pop_front() {
             match chip.destination {
                 Destination::DBot { number } => {
-                    let bot = self.bots.get_mut(&number).unwrap();
+                    let bot = fact.bots.get_mut(&number).unwrap();
                     bot.chips.push(chip.value);
 
                     if bot.chips.len() == 2 {
                         let sorted_chips = bot.chips.iter().copied().sorted().collect_vec();
 
-                        if sorted_chips == self.seek_chips {
-                            return bot.number;
+                        if sorted_chips == fact.seek_chips {
+                            chips_found = bot.number;
                         }
 
                         bot.chips.clear();
-                        self.chips.push_back(Chip {
+                        fact.chips.push_back(Chip {
                             value: sorted_chips[0],
                             destination: bot.dest_low,
                         });
-                        self.chips.push_back(Chip {
+                        fact.chips.push_back(Chip {
                             value: sorted_chips[1],
                             destination: bot.dest_high,
                         });
                     }
                 }
-                Destination::Output { .. } => {} // We don't care about outputs for now
+                Destination::Output { number } => {
+                    outputs.insert(number, chip.value);
+                }
             }
         }
 
-        unreachable!()
+        (chips_found, outputs)
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Bot {
     number: u32,
     dest_low: Destination,
@@ -104,7 +120,7 @@ impl Bot {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Chip {
     value: u32,
     destination: Destination,
@@ -124,7 +140,7 @@ impl Chip {
 #[derive(Debug, Copy, Clone)]
 enum Destination {
     DBot { number: u32 },
-    Output { _number: u32 },
+    Output { number: u32 },
 }
 
 impl Destination {
@@ -134,7 +150,7 @@ impl Destination {
                 number: u32::from_str(&destination[4..]).unwrap(),
             },
             "out" => Destination::Output {
-                _number: u32::from_str(&destination[7..]).unwrap(),
+                number: u32::from_str(&destination[7..]).unwrap(),
             },
             _ => unreachable!(),
         }
@@ -168,5 +184,19 @@ mod tests {
             .collect_vec();
 
         assert_eq!(161, solve_1(&input, [17, 61]));
+    }
+
+    #[test]
+    fn day_10_part_02_sample() {
+        // No sample inputs for part 2
+    }
+
+    #[test]
+    fn day_10_part_02_solution() {
+        let input = include_str!("../../inputs/day_10.txt")
+            .lines()
+            .collect_vec();
+
+        assert_eq!(133_163, solve_2(&input, [17, 61]));
     }
 }
