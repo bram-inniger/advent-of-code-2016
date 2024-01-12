@@ -6,7 +6,15 @@ use regex::Regex;
 use rustc_hash::FxHashSet;
 
 pub fn solve_1(arrangement: &[&str]) -> u16 {
-    let state = State::new(arrangement);
+    solve(arrangement, false)
+}
+
+pub fn solve_2(arrangement: &[&str]) -> u16 {
+    solve(arrangement, true)
+}
+
+fn solve(arrangement: &[&str], extras: bool) -> u16 {
+    let state = State::new(arrangement, extras);
 
     let mut visited: FxHashSet<SimpleState> = FxHashSet::default();
     let mut to_visit: VecDeque<State> = VecDeque::new();
@@ -34,21 +42,21 @@ pub fn solve_1(arrangement: &[&str]) -> u16 {
 }
 
 #[derive(Debug, Clone)]
-struct State {
+struct State<'a> {
     floor_nr: FloorNr,
-    floors: Vec<Floor>,
+    floors: Vec<Floor<'a>>,
     nr_steps: u16,
 }
 
-impl State {
-    fn new(arrangement: &[&str]) -> Self {
+impl<'a> State<'a> {
+    fn new(arrangement: &[&'a str], extras: bool) -> Self {
         let re = Regex::new(r"(?<name>\w+)(?<kind> generator|-compatible microchip)").unwrap();
-        let floors = arrangement
+        let mut floors = arrangement
             .iter()
             .map(|floor| {
                 re.captures_iter(floor)
                     .map(|caps| {
-                        let name = caps.name("name").unwrap().as_str().to_string();
+                        let name = caps.name("name").unwrap().as_str();
                         let kind = caps.name("kind").unwrap().as_str();
                         let kind = match &kind[kind.len() - 9..] {
                             "generator" => Kind::Generator,
@@ -61,7 +69,32 @@ impl State {
                     .collect()
             })
             .map(|items| Floor { items })
-            .collect();
+            .collect_vec();
+
+        if extras {
+            [
+                Item {
+                    name: "elerium",
+                    kind: Kind::Generator,
+                },
+                Item {
+                    name: "elerium",
+                    kind: Kind::Microchip,
+                },
+                Item {
+                    name: "dilithium",
+                    kind: Kind::Generator,
+                },
+                Item {
+                    name: "dilithium",
+                    kind: Kind::Microchip,
+                },
+            ]
+            .into_iter()
+            .for_each(|i| {
+                floors[0].items.insert(i);
+            })
+        }
 
         Self {
             floor_nr: FloorNr::new(),
@@ -90,7 +123,7 @@ impl State {
         }
     }
 
-    fn next(&self) -> Vec<State> {
+    fn next(&self) -> Vec<Self> {
         let items = &self.floors[self.floor_nr.number].items;
 
         let all_items_to_move = items
@@ -134,11 +167,11 @@ struct SimpleState {
 }
 
 #[derive(Debug, Clone)]
-struct Floor {
-    items: FxHashSet<Item>,
+struct Floor<'a> {
+    items: FxHashSet<Item<'a>>,
 }
 
-impl Floor {
+impl<'a> Floor<'a> {
     fn allowed(&self) -> bool {
         self.items.is_empty()
             || self.items.iter().all(|i| i.kind == Kind::Microchip)
@@ -149,7 +182,7 @@ impl Floor {
                 .filter(|i| i.kind == Kind::Microchip)
                 .all(|i| {
                     self.items.contains(&Item {
-                        name: i.name.clone(),
+                        name: i.name,
                         kind: Kind::Generator,
                     })
                 })
@@ -157,8 +190,8 @@ impl Floor {
 }
 
 #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
-struct Item {
-    name: String,
+struct Item<'a> {
+    name: &'a str,
     kind: Kind,
 }
 
@@ -214,5 +247,19 @@ mod tests {
             .collect_vec();
 
         assert_eq!(33, solve_1(&input));
+    }
+
+    #[test]
+    fn day_11_part_02_sample() {
+        // No sample inputs for part 1
+    }
+
+    #[test]
+    fn day_11_part_02_solution() {
+        let input = include_str!("../../inputs/day_11.txt")
+            .lines()
+            .collect_vec();
+
+        assert_eq!(57, solve_2(&input));
     }
 }
