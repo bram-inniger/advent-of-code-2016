@@ -1,6 +1,6 @@
 use itertools::Itertools;
 
-pub fn solve_1(data: &str, disk_size: usize) -> String {
+pub fn solve(data: &str, disk_size: usize) -> String {
     DragonCurve::new(data).enlarge(disk_size).checksum()
 }
 
@@ -67,14 +67,27 @@ mod tests {
 
     #[test]
     fn day_16_part_01_sample() {
-        assert_eq!("100", solve_1("110010110100", 12));
-        assert_eq!("01100", solve_1("10000", 20));
+        assert_eq!("100", solve("110010110100", 12));
+        assert_eq!("01100", solve("10000", 20));
     }
 
     #[test]
     fn day_16_part_01_solution() {
         let input = include_str!("../../inputs/day_16.txt").trim();
 
-        assert_eq!("10101001010100001", solve_1(input, 272));
+        assert_eq!("10101001010100001", solve(input, 272));
+    }
+
+    #[test]
+    fn day_16_part_02_sample() {
+        // No sample inputs for part 2
+    }
+
+    #[ignore = "slow brute force test"]
+    #[test]
+    fn day_16_part_02_solution() {
+        let input = include_str!("../../inputs/day_16.txt").trim();
+
+        assert_eq!("10100001110101001", solve(input, 35_651_584));
     }
 }
