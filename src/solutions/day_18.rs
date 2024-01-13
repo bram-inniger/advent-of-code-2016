@@ -1,4 +1,4 @@
-pub fn solve_1(row: &str, nr_rows: u8) -> usize {
+pub fn solve(row: &str, nr_rows: u32) -> usize {
     let mut row = Row::new(row);
     let mut rows = vec![row.clone()];
 
@@ -75,14 +75,26 @@ mod tests {
 
     #[test]
     fn day_18_part_01_sample() {
-        assert_eq!(6, solve_1("..^^.", 3));
-        assert_eq!(38, solve_1(".^^.^.^^^^", 10));
+        assert_eq!(6, solve("..^^.", 3));
+        assert_eq!(38, solve(".^^.^.^^^^", 10));
     }
 
     #[test]
     fn day_18_part_01_solution() {
         let input = include_str!("../../inputs/day_18.txt").trim();
 
-        assert_eq!(1_951, solve_1(input, 40));
+        assert_eq!(1_951, solve(input, 40));
+    }
+
+    #[test]
+    fn day_18_part_02_sample() {
+        // No sample inputs for part 2
+    }
+
+    #[test]
+    fn day_18_part_02_solution() {
+        let input = include_str!("../../inputs/day_18.txt").trim();
+
+        assert_eq!(20_002_936, solve(input, 400_000));
     }
 }
