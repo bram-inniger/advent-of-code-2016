@@ -4,7 +4,21 @@ use std::str::FromStr;
 use regex::Regex;
 
 pub fn solve_1(disks: &[&str]) -> u32 {
-    let disks = disks.iter().map(|d| Disk::new(d)).collect_vec();
+    solve(disks, false)
+}
+
+pub fn solve_2(disks: &[&str]) -> u32 {
+    solve(disks, true)
+}
+
+fn solve(disks: &[&str], extra_disk: bool) -> u32 {
+    let mut disks = disks.iter().map(|d| Disk::new(d)).collect_vec();
+    if extra_disk {
+        disks.push(Disk {
+            positions: 11,
+            offset: 0,
+        });
+    }
     let mut time = 0;
 
     loop {
@@ -68,5 +82,19 @@ mod tests {
             .collect_vec();
 
         assert_eq!(122_318, solve_1(&input));
+    }
+
+    #[test]
+    fn day_15_part_02_sample() {
+        // No sample inputs for part 2
+    }
+
+    #[test]
+    fn day_15_part_02_solution() {
+        let input = include_str!("../../inputs/day_15.txt")
+            .lines()
+            .collect_vec();
+
+        assert_eq!(3_208_583, solve_2(&input));
     }
 }
