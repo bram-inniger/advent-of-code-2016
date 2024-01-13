@@ -2,15 +2,34 @@ use md5::{Digest, Md5};
 use std::collections::VecDeque;
 
 pub fn solve_1(passcode: &str) -> String {
+    solve(passcode, Path::Shortest)
+}
+
+pub fn solve_2(passcode: &str) -> usize {
+    solve(passcode, Path::Longest).len()
+}
+
+fn solve(passcode: &str, path: Path) -> String {
     let destination = Coordinate { x: 3, y: 3 };
     let start = Room::new(passcode);
 
     let mut to_visit: VecDeque<Room> = VecDeque::new();
     to_visit.push_back(start);
 
+    let mut valid_paths: Vec<String> = vec![];
+
     while let Some(room) = to_visit.pop_front() {
         if room.coordinate == destination {
-            return room.data.chars().skip(passcode.len()).collect();
+            let valid_path = room.data.chars().skip(passcode.len()).collect();
+            match path {
+                Path::Shortest => {
+                    return valid_path;
+                }
+                Path::Longest => {
+                    valid_paths.push(valid_path);
+                    continue;
+                }
+            }
         }
 
         room.neighbours()
@@ -18,7 +37,7 @@ pub fn solve_1(passcode: &str) -> String {
             .for_each(|n| to_visit.push_back(n))
     }
 
-    unreachable!()
+    valid_paths.into_iter().max_by_key(|p| p.len()).unwrap()
 }
 
 #[derive(Debug)]
@@ -99,6 +118,12 @@ enum Door {
     Closed,
 }
 
+#[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
+enum Path {
+    Shortest,
+    Longest,
+}
+
 impl Door {
     fn new(door: char) -> Self {
         match door {
@@ -131,5 +156,19 @@ mod tests {
         let input = include_str!("../../inputs/day_17.txt").trim();
 
         assert_eq!("RDRDUDLRDR", solve_1(input));
+    }
+
+    #[test]
+    fn day_17_part_02_sample() {
+        assert_eq!(370, solve_2("ihgpwlah"));
+        assert_eq!(492, solve_2("kglvqrro"));
+        assert_eq!(830, solve_2("ulqzkmiv"));
+    }
+
+    #[test]
+    fn day_17_part_02_solution() {
+        let input = include_str!("../../inputs/day_17.txt").trim();
+
+        assert_eq!(386, solve_2(input));
     }
 }
