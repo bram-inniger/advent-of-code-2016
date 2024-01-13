@@ -5,7 +5,11 @@ use std::{i32, usize};
 use rustc_hash::FxHashMap;
 
 pub fn solve_1(code: &[&str]) -> i32 {
-    Computer::new(code).run()[&Register::A]
+    Computer::new(code, 0).run()[&Register::A]
+}
+
+pub fn solve_2(code: &[&str]) -> i32 {
+    Computer::new(code, 1).run()[&Register::A]
 }
 
 #[derive(Debug)]
@@ -15,11 +19,15 @@ struct Computer {
 }
 
 impl Computer {
-    fn new(code: &[&str]) -> Self {
-        let registers = [Register::A, Register::B, Register::C, Register::D]
-            .into_iter()
-            .map(|r| (r, 0))
-            .collect();
+    fn new(code: &[&str], c: i32) -> Self {
+        let registers = [
+            (Register::A, 0),
+            (Register::B, 0),
+            (Register::C, c),
+            (Register::D, 0),
+        ]
+        .into_iter()
+        .collect();
         let instructions = code.iter().map(|i| Instruction::new(i)).collect();
 
         Self {
@@ -162,5 +170,19 @@ mod tests {
             .collect_vec();
 
         assert_eq!(318_009, solve_1(&input));
+    }
+
+    #[test]
+    fn day_12_part_02_sample() {
+        // No sample inputs for part 2
+    }
+
+    #[test]
+    fn day_12_part_02_solution() {
+        let input = include_str!("../../inputs/day_12.txt")
+            .lines()
+            .collect_vec();
+
+        assert_eq!(9_227_663, solve_2(&input));
     }
 }
