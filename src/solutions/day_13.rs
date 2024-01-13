@@ -1,8 +1,17 @@
 use rustc_hash::FxHashSet;
 use std::collections::VecDeque;
+use std::ops::Not;
 use std::str::FromStr;
 
 pub fn solve_1(favourite: &str, dest_x: i32, dest_y: i32) -> u32 {
+    solve(favourite, dest_x, dest_y, true)
+}
+
+pub fn solve_2(favourite: &str) -> u32 {
+    solve(favourite, 0, 0, false)
+}
+
+fn solve(favourite: &str, dest_x: i32, dest_y: i32, find_dest: bool) -> u32 {
     let favourite = i32::from_str(favourite).unwrap();
 
     let start = Coordinate { x: 1, y: 1 };
@@ -20,8 +29,10 @@ pub fn solve_1(favourite: &str, dest_x: i32, dest_y: i32) -> u32 {
             continue;
         }
 
-        if coord == destination {
+        if find_dest && coord == destination {
             return steps;
+        } else if find_dest.not() && steps > 50 {
+            return visited.len() as u32;
         }
 
         visited.insert(coord);
@@ -93,5 +104,17 @@ mod tests {
         let input = include_str!("../../inputs/day_13.txt").trim();
 
         assert_eq!(86, solve_1(input, 31, 39));
+    }
+
+    #[test]
+    fn day_13_part_02_sample() {
+        // No sample inputs for part 1
+    }
+
+    #[test]
+    fn day_13_part_02_solution() {
+        let input = include_str!("../../inputs/day_13.txt").trim();
+
+        assert_eq!(127, solve_2(input));
     }
 }
