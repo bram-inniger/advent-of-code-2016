@@ -12,6 +12,14 @@ pub fn solve_1(code: &[&str]) -> i32 {
         .unwrap()
 }
 
+pub fn solve_2() {
+    // You activate all fifty stars and transmit the signal. The star atop the antenna begins to glow.
+    //
+    // Suddenly, you see the sleigh fly past you!
+    //
+    // Looks like Santa was already waiting for your signal.
+}
+
 #[cfg(test)]
 mod tests {
     use itertools::Itertools;
@@ -30,5 +38,15 @@ mod tests {
             .collect_vec();
 
         assert_eq!(175, solve_1(&input));
+    }
+
+    #[test]
+    fn day_25_part_02_sample() {
+        solve_2();
+    }
+
+    #[test]
+    fn day_25_part_02_solution() {
+        solve_2();
     }
 }
