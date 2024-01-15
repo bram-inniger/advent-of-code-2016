@@ -1,11 +1,11 @@
 use crate::computer::{Computer, Register};
 
 pub fn solve_1(code: &[&str]) -> i32 {
-    Computer::new(code, vec![]).run()[&Register::A]
+    Computer::new(code, vec![]).run(false)[&Register::A]
 }
 
 pub fn solve_2(code: &[&str]) -> i32 {
-    Computer::new(code, vec![(Register::C, 1)]).run()[&Register::A]
+    Computer::new(code, vec![(Register::C, 1)]).run(false)[&Register::A]
 }
 
 #[cfg(test)]

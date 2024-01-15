@@ -24,7 +24,7 @@ impl Computer {
         }
     }
 
-    pub fn run(&self) -> FxHashMap<Register, i32> {
+    pub fn run(&self, unwrap_loop: bool) -> FxHashMap<Register, i32> {
         let Computer {
             mut registers,
             mut instructions,
@@ -35,26 +35,20 @@ impl Computer {
             let instruction = &instructions[ip];
 
             // Manually unrolled the assembunny for Day 23 Part 2 to replace the loops with the direct code below
-            // This code should run only for Day 23's input, so we check that the loop-start at index 5 contains
-            // the expected instruction.
-            // The other Day using this computer code (Day 12) has a different instruction at this position.
-            if ip == 5 {
-                if let Instruction::Inc { .. } = instruction {
-                    registers = [
-                        (
-                            Register::A,
-                            registers[&Register::A]
-                                + registers[&Register::B] * registers[&Register::D],
-                        ),
-                        (Register::B, registers[&Register::B]),
-                        (Register::C, 0),
-                        (Register::D, 1),
-                    ]
-                    .into_iter()
-                    .collect();
-                    ip = 8;
-                    continue;
-                }
+            if ip == 5 && unwrap_loop {
+                registers = [
+                    (
+                        Register::A,
+                        registers[&Register::A] + registers[&Register::B] * registers[&Register::D],
+                    ),
+                    (Register::B, registers[&Register::B]),
+                    (Register::C, 0),
+                    (Register::D, 1),
+                ]
+                .into_iter()
+                .collect();
+                ip = 8;
+                continue;
             }
             ip += 1;
 
