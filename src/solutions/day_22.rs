@@ -9,8 +9,8 @@ pub fn solve_1(nodes: &[&str]) -> usize {
     Grid::new(nodes).find_pairs().len()
 }
 
-pub fn solve_2(nodes: &[&str]) -> u32 {
-    Grid::new(nodes).move_data()
+pub fn solve_2(nodes: &[&str], test_input: bool) -> u32 {
+    Grid::new(nodes).move_data(test_input)
 }
 
 #[derive(Debug)]
@@ -56,30 +56,16 @@ impl Grid {
             .collect()
     }
 
-    fn move_data(&self) -> u32 {
-        if self.max_x == 2 {
-            // This is the sample input
-            // Worked out by hand by looking at the grid
-            let moves_to_place_empty_node_left_of_goal = 1;
-            let distance_to_move_goal = 1;
-            let moves_needed_to_move_goal_left_once = 5;
-            let final_swap_of_goal_to_start = 1;
+    fn move_data(&self, test_input: bool) -> u32 {
+        // Worked out by hand by looking at the grid
+        let moves_to_place_empty_node_left_of_goal = if test_input { 1 } else { 33 };
+        let distance_to_move_goal = self.max_x as u32 - 1;
+        let moves_needed_to_move_goal_left_once = 5;
+        let final_swap_of_goal_to_start = 1;
 
-            moves_to_place_empty_node_left_of_goal
-                + distance_to_move_goal * moves_needed_to_move_goal_left_once
-                + final_swap_of_goal_to_start
-        } else {
-            // This is the real input
-            // Worked out by hand by looking at the grid
-            let moves_to_place_empty_node_left_of_goal = 33;
-            let distance_to_move_goal = 35;
-            let moves_needed_to_move_goal_left_once = 5;
-            let final_swap_of_goal_to_start = 1;
-
-            moves_to_place_empty_node_left_of_goal
-                + distance_to_move_goal * moves_needed_to_move_goal_left_once
-                + final_swap_of_goal_to_start
-        }
+        moves_to_place_empty_node_left_of_goal
+            + distance_to_move_goal * moves_needed_to_move_goal_left_once
+            + final_swap_of_goal_to_start
     }
 }
 
@@ -91,8 +77,7 @@ impl Display for Grid {
             y: 0,
         };
         let pairs = self.find_pairs();
-        let movable: FxHashSet<Coordinate> =
-            pairs.iter().flat_map(|(s, r)| [s.coord, r.coord]).collect();
+        let movable: FxHashSet<_> = pairs.iter().flat_map(|(s, r)| [s.coord, r.coord]).collect();
 
         let display = (0..=self.max_y)
             .map(|y| {
@@ -108,6 +93,7 @@ impl Display for Grid {
                     .collect::<String>()
             })
             .join("\n");
+
         write!(f, "{}", display)
     }
 }
@@ -178,7 +164,7 @@ mod tests {
             "/dev/grid/node-x2-y2    9T    6T     3T   66%",
         ];
 
-        assert_eq!(7, solve_2(&sample));
+        assert_eq!(7, solve_2(&sample, true));
     }
 
     #[test]
@@ -187,6 +173,6 @@ mod tests {
             .lines()
             .collect_vec();
 
-        assert_eq!(209, solve_2(&input));
+        assert_eq!(209, solve_2(&input, false));
     }
 }
