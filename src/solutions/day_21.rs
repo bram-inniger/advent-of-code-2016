@@ -19,6 +19,27 @@ pub fn solve_1(instructions: &[&str], password: &str) -> String {
     password.to_string()
 }
 
+pub fn solve_2(instructions: &[&str], to_find: &str) -> String {
+    let permutations = to_find.chars().permutations(to_find.len()).collect_vec();
+    let instructions = instructions
+        .iter()
+        .map(|s| Instruction::new(s))
+        .collect_vec();
+
+    for p in permutations {
+        let mut password = Password { chars: p.clone() };
+        for ins in &instructions {
+            ins.run(&mut password);
+        }
+
+        if password.to_string() == to_find {
+            return p.iter().collect();
+        }
+    }
+
+    unreachable!()
+}
+
 #[derive(Debug)]
 enum Instruction {
     SwapPosition { x: usize, y: usize },
@@ -230,5 +251,19 @@ mod tests {
             .collect_vec();
 
         assert_eq!("bdfhgeca", solve_1(&input, "abcdefgh"));
+    }
+
+    #[test]
+    fn day_21_part_02_sample() {
+        // No sample inputs for part 2
+    }
+
+    #[test]
+    fn day_21_part_02_solution() {
+        let input = include_str!("../../inputs/day_21.txt")
+            .lines()
+            .collect_vec();
+
+        assert_eq!("gdfcabeh", solve_2(&input, "fbgdceah"));
     }
 }
