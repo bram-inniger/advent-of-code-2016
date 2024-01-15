@@ -4,6 +4,7 @@ use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
 use regex::Regex;
+use rustc_hash::FxHashMap;
 
 pub fn solve_1(instructions: &[&str], password: &str) -> String {
     let instructions = instructions
@@ -20,24 +21,25 @@ pub fn solve_1(instructions: &[&str], password: &str) -> String {
 }
 
 pub fn solve_2(instructions: &[&str], to_find: &str) -> String {
-    let permutations = to_find.chars().permutations(to_find.len()).collect_vec();
     let instructions = instructions
         .iter()
         .map(|s| Instruction::new(s))
         .collect_vec();
+    let mut password = Password::new(to_find);
+    let rot_pos_mapping: FxHashMap<usize, usize> = (0..to_find.len())
+        .map(|idx| {
+            (
+                (1 + 2 * idx + if idx >= 4 { 1 } else { 0 }) % to_find.len(),
+                idx,
+            )
+        })
+        .collect();
 
-    for p in permutations {
-        let mut password = Password { chars: p.clone() };
-        for ins in &instructions {
-            ins.run(&mut password);
-        }
-
-        if password.to_string() == to_find {
-            return p.iter().collect();
-        }
+    for ins in instructions.iter().rev() {
+        ins.undo(&mut password, &rot_pos_mapping);
     }
 
-    unreachable!()
+    password.to_string()
 }
 
 #[derive(Debug)]
@@ -108,6 +110,38 @@ impl Instruction {
             }
             Instruction::ReversePosition { x, y } => password.rev_substring(*x, *y),
             Instruction::MovePosition { x, y } => password.move_char(*x, *y),
+        }
+    }
+
+    fn undo(&self, password: &mut Password, rot_pos_mapping: &FxHashMap<usize, usize>) {
+        match self {
+            Instruction::SwapPosition { x, y } => password.swap(*x, *y),
+            Instruction::SwapLetter { x, y } => {
+                let pos_x = password.position(x);
+                let pos_y = password.position(y);
+                password.swap(pos_x, pos_y);
+            }
+            Instruction::RotateSteps { rotation, steps } => password.rotate(
+                &match rotation {
+                    Rotation::Left => Rotation::Right,
+                    Rotation::Right => Rotation::Left,
+                },
+                *steps,
+            ),
+            Instruction::RotateLetter { x } => {
+                let idx = password.position(x);
+                let orig_idx = rot_pos_mapping[&idx];
+
+                let rotations = idx as i32 - orig_idx as i32;
+
+                if rotations > 0 {
+                    password.rotate(&Rotation::Left, rotations as usize)
+                } else {
+                    password.rotate(&Rotation::Right, (-rotations) as usize)
+                }
+            }
+            Instruction::ReversePosition { x, y } => password.rev_substring(*x, *y),
+            Instruction::MovePosition { x, y } => password.move_char(*y, *x),
         }
     }
 }
