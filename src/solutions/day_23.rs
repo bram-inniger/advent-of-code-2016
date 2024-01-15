@@ -1,7 +1,11 @@
-use crate::util::{Computer, Register};
+use crate::computer::{Computer, Register};
 
 pub fn solve_1(code: &[&str]) -> i32 {
     Computer::new(code, vec![(Register::A, 7)]).run()[&Register::A]
+}
+
+pub fn solve_2(code: &[&str]) -> i32 {
+    Computer::new(code, vec![(Register::A, 12)]).run()[&Register::A]
 }
 
 #[cfg(test)]
@@ -26,5 +30,19 @@ mod tests {
             .collect_vec();
 
         assert_eq!(11_893, solve_1(&input));
+    }
+
+    #[test]
+    fn day_23_part_02_sample() {
+        // No sample inputs for part 2
+    }
+
+    #[test]
+    fn day_23_part_02_solution() {
+        let input = include_str!("../../inputs/day_23.txt")
+            .lines()
+            .collect_vec();
+
+        assert_eq!(479_008_453, solve_2(&input));
     }
 }

@@ -1,4 +1,4 @@
-use crate::util::{Computer, Register};
+use crate::computer::{Computer, Register};
 
 pub fn solve_1(code: &[&str]) -> i32 {
     Computer::new(code, vec![]).run()[&Register::A]
