@@ -4,7 +4,8 @@ pub fn solve_1(code: &[&str]) -> i32 {
     (0..i32::MAX)
         .find(|signal| {
             Computer::new(code, vec![(Register::A, *signal)])
-                .run_limited()
+                .run(false, 7)
+                .output
                 .into_iter()
                 .enumerate()
                 .all(|(idx, out)| (idx % 2) as i32 == out)

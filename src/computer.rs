@@ -5,9 +5,9 @@ use std::str::FromStr;
 
 #[derive(Debug, Clone)]
 pub struct Computer {
-    registers: FxHashMap<Register, i32>,
+    pub registers: FxHashMap<Register, i32>,
+    pub output: Vec<i32>,
     instructions: Vec<Instruction>,
-    output: Vec<i32>,
 }
 
 impl Computer {
@@ -21,33 +21,20 @@ impl Computer {
 
         Self {
             registers,
-            instructions,
             output: vec![],
+            instructions,
         }
     }
 
-    pub fn run(&self, unwrap_loop: bool) -> FxHashMap<Register, i32> {
+    pub fn run(&self, unwrap_loop: bool, output_len: usize) -> Self {
         let mut computer = self.clone();
         let mut ip = 0;
 
-        while ip < computer.instructions.len() {
+        while ip < computer.instructions.len() && computer.output.len() <= output_len {
             ip = computer.step(ip, unwrap_loop);
         }
 
-        computer.registers
-    }
-
-    pub fn run_limited(&self) -> Vec<i32> {
-        let mut computer = self.clone();
-        let mut ip = 0;
-        let mut steps = 0;
-
-        while ip < computer.instructions.len() && steps < 40000 {
-            ip = computer.step(ip, false);
-            steps += 1;
-        }
-
-        computer.output
+        computer
     }
 
     fn step(&mut self, ip: usize, unwrap_loop: bool) -> usize {
