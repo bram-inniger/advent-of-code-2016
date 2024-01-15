@@ -7,6 +7,7 @@ use std::str::FromStr;
 pub struct Computer {
     registers: FxHashMap<Register, i32>,
     instructions: Vec<Instruction>,
+    output: Vec<i32>,
 }
 
 impl Computer {
@@ -21,74 +22,100 @@ impl Computer {
         Self {
             registers,
             instructions,
+            output: vec![],
         }
     }
 
     pub fn run(&self, unwrap_loop: bool) -> FxHashMap<Register, i32> {
-        let Computer {
-            mut registers,
-            mut instructions,
-        } = self.clone();
+        let mut computer = self.clone();
         let mut ip = 0;
 
-        while ip < instructions.len() {
-            let instruction = &instructions[ip];
-
-            // Manually unrolled the assembunny for Day 23 Part 2 to replace the loops with the direct code below
-            if ip == 5 && unwrap_loop {
-                registers = [
-                    (
-                        Register::A,
-                        registers[&Register::A] + registers[&Register::B] * registers[&Register::D],
-                    ),
-                    (Register::B, registers[&Register::B]),
-                    (Register::C, 0),
-                    (Register::D, 1),
-                ]
-                .into_iter()
-                .collect();
-                ip = 8;
-                continue;
-            }
-            ip += 1;
-
-            if let Instruction::Jnz { valid: false, .. } = instruction {
-                continue;
-            }
-
-            match instruction {
-                Instruction::Cpy { from, to, .. } => match from {
-                    Value::R { register } => *registers.get_mut(to).unwrap() = registers[register],
-                    Value::C { constant } => *registers.get_mut(to).unwrap() = *constant,
-                },
-                Instruction::Inc { register, .. } => *registers.get_mut(register).unwrap() += 1,
-                Instruction::Dec { register, .. } => *registers.get_mut(register).unwrap() -= 1,
-                Instruction::Jnz { value, offset, .. } => {
-                    let i_value = match value {
-                        Value::R { register } => registers[register],
-                        Value::C { constant } => *constant,
-                    };
-                    let offset_value = match offset {
-                        Value::R { register } => registers[register],
-                        Value::C { constant } => *constant,
-                    };
-
-                    if i_value != 0 {
-                        ip = (ip as i32 + offset_value) as usize - 1;
-                    }
-                }
-                Instruction::Tgl { register, .. } => {
-                    let idx = ip as i32 - 1 + registers[register];
-
-                    if idx >= 0 && idx < instructions.len() as i32 {
-                        let idx = idx as usize;
-                        instructions[idx] = instructions[idx].toggle();
-                    }
-                }
-            }
+        while ip < computer.instructions.len() {
+            ip = computer.step(ip, unwrap_loop);
         }
 
-        registers
+        computer.registers
+    }
+
+    pub fn run_limited(&self) -> Vec<i32> {
+        let mut computer = self.clone();
+        let mut ip = 0;
+        let mut steps = 0;
+
+        while ip < computer.instructions.len() && steps < 40000 {
+            ip = computer.step(ip, false);
+            steps += 1;
+        }
+
+        computer.output
+    }
+
+    fn step(&mut self, ip: usize, unwrap_loop: bool) -> usize {
+        let instruction = &self.instructions[ip];
+        let mut ip = ip;
+
+        // Manually unrolled the assembunny for Day 23 Part 2 to replace the loops with the direct code below
+        if ip == 5 && unwrap_loop {
+            self.registers = [
+                (
+                    Register::A,
+                    self.registers[&Register::A]
+                        + self.registers[&Register::B] * self.registers[&Register::D],
+                ),
+                (Register::B, self.registers[&Register::B]),
+                (Register::C, 0),
+                (Register::D, 1),
+            ]
+            .into_iter()
+            .collect();
+            return 8;
+        }
+        ip += 1;
+
+        if let Instruction::Jnz { valid: false, .. } = instruction {
+            return ip;
+        }
+
+        match instruction {
+            Instruction::Cpy { from, to, .. } => match from {
+                Value::R { register } => {
+                    *self.registers.get_mut(to).unwrap() = self.registers[register]
+                }
+                Value::C { constant } => *self.registers.get_mut(to).unwrap() = *constant,
+            },
+            Instruction::Inc { register, .. } => *self.registers.get_mut(register).unwrap() += 1,
+            Instruction::Dec { register, .. } => *self.registers.get_mut(register).unwrap() -= 1,
+            Instruction::Jnz { value, offset, .. } => {
+                let i_value = match value {
+                    Value::R { register } => self.registers[register],
+                    Value::C { constant } => *constant,
+                };
+                let offset_value = match offset {
+                    Value::R { register } => self.registers[register],
+                    Value::C { constant } => *constant,
+                };
+
+                if i_value != 0 {
+                    ip = (ip as i32 + offset_value) as usize - 1;
+                }
+            }
+            Instruction::Tgl { register, .. } => {
+                let idx = ip as i32 - 1 + self.registers[register];
+
+                if idx >= 0 && idx < self.instructions.len() as i32 {
+                    let idx = idx as usize;
+                    self.instructions[idx] = self.instructions[idx].toggle();
+                }
+            }
+            Instruction::Out { value } => {
+                let out_value = match value {
+                    Value::R { register } => self.registers[register],
+                    Value::C { constant } => *constant,
+                };
+                self.output.push(out_value);
+            }
+        }
+        ip
     }
 }
 
@@ -111,6 +138,9 @@ enum Instruction {
     },
     Tgl {
         register: Register,
+    },
+    Out {
+        value: Value,
     },
 }
 
@@ -137,6 +167,9 @@ impl Instruction {
             }
             "tgl" => Instruction::Tgl {
                 register: Register::new(&ins[4..]),
+            },
+            "out" => Instruction::Out {
+                value: Value::new(&ins[4..]),
             },
             _ => unreachable!(),
         }
@@ -177,6 +210,7 @@ impl Instruction {
                 }
             }
             Instruction::Tgl { register } => Instruction::Inc { register },
+            Instruction::Out { .. } => unimplemented!(),
         }
     }
 }
