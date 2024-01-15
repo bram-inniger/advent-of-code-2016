@@ -2,7 +2,11 @@ use itertools::Itertools;
 use std::collections::{HashMap, HashSet, VecDeque};
 
 pub fn solve_1(blueprint: &[&str]) -> u32 {
-    Ducts::new(blueprint).total_shortest_path()
+    Ducts::new(blueprint).total_shortest_path(false)
+}
+
+pub fn solve_2(blueprint: &[&str]) -> u32 {
+    Ducts::new(blueprint).total_shortest_path(true)
 }
 
 #[derive(Debug)]
@@ -61,7 +65,7 @@ impl Ducts {
         }
     }
 
-    fn total_shortest_path(&self) -> u32 {
+    fn total_shortest_path(&self, return_zero: bool) -> u32 {
         let shortest_paths: HashMap<(&Coordinate, &Coordinate), u32> = self
             .locations
             .iter()
@@ -75,15 +79,20 @@ impl Ducts {
             .permutations(self.locations.len() - 1)
             .collect_vec();
 
+        let start = &self.locations[0];
         let mut min_distance = u32::MAX;
 
         for ordering in visit_orderings {
             let mut distance = 0;
-            let mut current = &self.locations[0];
+            let mut current = start;
 
             for next in ordering {
                 distance += shortest_paths[&(current, next)];
                 current = next;
+            }
+
+            if return_zero {
+                distance += shortest_paths[&(current, start)];
             }
 
             min_distance = min_distance.min(distance);
@@ -160,5 +169,19 @@ mod tests {
             .collect_vec();
 
         assert_eq!(474, solve_1(&input));
+    }
+
+    #[test]
+    fn day_24_part_02_sample() {
+        // No sample inputs for part 2
+    }
+
+    #[test]
+    fn day_24_part_02_solution() {
+        let input = include_str!("../../inputs/day_24.txt")
+            .lines()
+            .collect_vec();
+
+        assert_eq!(696, solve_2(&input));
     }
 }
